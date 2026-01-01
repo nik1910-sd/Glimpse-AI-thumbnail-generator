@@ -1,34 +1,36 @@
-import LenisScroll from "./components/lenis-scroll";
+
+import HomePage from "./pages/HomePage";
 import Navbar from "./components/navbar";
+import { Routes,Route} from "react-router-dom";
+import LenisScroll from "./components/lenis-scroll";
 import Footer from "./components/footer";
-import HeroSection from "./sections/hero-section";
-import FaqSection from "./sections/faq-section";
-import Features from "./sections/features";
-import WorkflowSteps from "./sections/workflow-steps";
-import Testimonials from "./sections/testimonials";
-import PricingPlans from "./sections/pricing-plans";
-import CallToAction from "./sections/call-to-action";
+import Generate from "./pages/Generate";
+import MyGenerations from "./pages/MyGenerations";
+import Login  from "./components/login";
+import YtPreview from "./pages/YtPreview";
+
+
+
 
 export default function App() {
-    return (
+    return(
         <>
-            <LenisScroll />
-            <Navbar />
-            <div className="fixed inset-0 overflow-hidden -z-20 pointer-events-none">
-                <div className="absolute rounded-full top-80 left-2/5 -translate-x-1/2 size-130 bg-[#D10A8A] blur-[100px]" />
-                <div className="absolute rounded-full top-80 right-0 -translate-x-1/2 size-130 bg-[#2E08CF] blur-[100px]" />
-                <div className="absolute rounded-full top-0 left-1/2 -translate-x-1/2 size-130 bg-[#F26A06] blur-[100px]" />
-            </div>
-            <main className='px-4'>
-                <HeroSection />
-                <Features />
-                <WorkflowSteps />
-                <Testimonials />
-                <FaqSection />
-                <PricingPlans />
-                <CallToAction />
-            </main>
-            <Footer />
+            
+        
+           <LenisScroll/>
+           <Navbar/>
+           <Routes>
+            <Route  path='/' element={<HomePage/>}/> 
+            <Route path='/generate' element={<Generate/>}/>
+            <Route path='/generate/:id' element={<Generate/>}/>
+            <Route path='/my-generations' element={<MyGenerations/>}/>
+            <Route path='/login' element={<Login/>}/>
+            <Route path='/preview' element={<YtPreview/>}/>
+              
+           </Routes>
+           <Footer/>
+             
         </>
     );
 }
+
