@@ -9,6 +9,7 @@ import MyGenerations from "./pages/MyGenerations";
 import Login  from "./components/login";
 import YtPreview from "./pages/YtPreview";
 import { useEffect } from "react";
+import { ToastContainer } from 'react-toastify';
 
 
 
@@ -23,7 +24,7 @@ export default function App() {
     return(
         <>
             
-        
+           
            <LenisScroll/>
            <Navbar/>
            <Routes>
@@ -36,6 +37,19 @@ export default function App() {
               
            </Routes>
            <Footer/>
+           <ToastContainer 
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark" 
+        />
+           
              
         </>
     );

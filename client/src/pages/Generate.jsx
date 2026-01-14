@@ -1,130 +1,180 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { thumbnailStyles,colorSchemes ,aspectRatios,dummyThumbnails } from "../../assets/Assets";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
+// Removed dummyThumbnails from imports as it is no longer used
+import { thumbnailStyles, colorSchemes, aspectRatios } from "../../assets/Assets";
 import AspectRatioSelector from "../components/AspectRatioSelector";
-import StyleSelector   from "../components/StyleSelector";
+import StyleSelector from "../components/StyleSelector";
 import ColorSchemeSelector from "../components/ColorSchemeSelector";
 import PreviewPanel from "../components/PreviewPanel";
-
+import { useAuth } from '../context/AuthContext';
+import { toast } from "react-toastify";
+import api from "../configs/api";
 
 const Generate = () => {
   const { id } = useParams();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
+
   const [title, setTitle] = useState("");
   const [additionalDetails, setAdditionalDetails] = useState("");
-
-  const [thumbnail, setThumbnail] = useState(dummyThumbnails);
+  const [thumbnail, setThumbnail] = useState(null); 
   const [loading, setLoading] = useState(false);
 
-  const[aspectRatio,setAspectRatio] =useState(aspectRatios[0]);
-  const[colorSchemeId,setColorSchemeId]=useState(colorSchemes[0].id);
-  const[style,setStyle]=useState(thumbnailStyles[0]);
-  const[styleDropdownOpen,setStyleDropdownOpen]=useState(false);
+  const [aspectRatio, setAspectRatio] = useState(aspectRatios[0]);
+  const [colorSchemeId, setColorSchemeId] = useState(colorSchemes[0].id);
+  const [style, setStyle] = useState(thumbnailStyles[0]);
+  const [styleDropdownOpen, setStyleDropdownOpen] = useState(false);
 
-  const handelGenerate = async() => {
+  const handleGenerate = async () => {
+    if (!isLoggedIn) return toast.error('Please login to generate thumbnails');
+    if (!title.trim()) return toast.error('Title is required');
+    
+    setLoading(true);
 
-  }
+    const api_payload = {
+      title,
+      prompt: additionalDetails,
+      style,
+      aspect_ratio: aspectRatio,
+      color_scheme: colorSchemeId,
+      text_overlay: true,
+    };
 
-  const fetchThumbnail = async() =>{
-      if(id){
-        const thumbnail = dummyThumbnails.find((thumbnail)=>thumbnail._id === id);
-        setThumbnail(thumbnail);
-        setAdditionalDetails(thumbnail.user_prompt);
-        setTitle(thumbnail.title);
-        setColorSchemeId(thumbnail.color_scheme);
-        setAspectRatio(thumbnail.aspect_ratio);
-        setStyle(thumbnail.style);
-        setLoading(false); 
+    try {
+      const { data } = await api.post('/api/thumbnail/generate', api_payload);
+      if (data.thumbnail) {
+        navigate('/generate/' + data.thumbnail._id);
+        toast.success(data.message);
       }
-  }
-
-   useEffect(()=>{
-    if(id){
-      fetchThumbnail()
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Generation failed");
+      setLoading(false);
     }
-   },[id])
+  };
+
+  const fetchThumbnail = async () => {
+    try {
+      const { data } = await api.get(`/api/user/thumbnail/${id}`);
+      setThumbnail(data?.thumbnail);
+      setLoading(!data?.thumbnail?.image_url);
+      setAdditionalDetails(data?.thumbnail?.user_prompt || "");
+      setTitle(data?.thumbnail?.title || "");
+      setColorSchemeId(data?.thumbnail?.color_scheme);
+      setAspectRatio(data?.thumbnail?.aspect_ratio);
+      setStyle(data?.thumbnail?.style);
+    } catch (error) {
+      console.error(error);
+      toast.error(error?.response?.data?.message || error.message);
+    }
+  };
+
+  // Poll for status if generating
+  useEffect(() => {
+    if (isLoggedIn && id) {
+      fetchThumbnail();
+    }
+    if (id && loading && isLoggedIn) {
+      const interval = setInterval(() => {
+        fetchThumbnail();
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [id, loading, isLoggedIn]);
+
+  // Clear state when navigating away from a specific generation
+  useEffect(() => {
+    if (!id) {
+      setThumbnail(null);
+      setTitle("");
+      setAdditionalDetails("");
+      setLoading(false);
+    }
+  }, [pathname, id]);
+
   return (
     <>
+      {/* Background Decorations */}
       <div className="fixed inset-0 overflow-hidden -z-20 pointer-events-none">
-       
-    <div className="absolute rounded-full top-80 left-2/5 -translate-x-1/2 size-130 bg-[#D10A8A]/40 blur-[120px]" />
-    <div className="absolute rounded-full top-80 right-0 -translate-x-1/2 size-130 bg-[#2E08CF]/40 blur-[120px]" />
-    <div className="absolute rounded-full top-0 left-1/2 -translate-x-1/2 size-130 bg-[#F26A06]/40 blur-[120px]" />
-    </div>
-      
+        <div className="absolute rounded-full top-80 left-[40%] -translate-x-1/2 size-[520px] bg-[#D10A8A]/40 blur-[120px]" />
+        <div className="absolute rounded-full top-80 right-0 -translate-x-1/2 size-[520px] bg-[#2E08CF]/40 blur-[120px]" />
+        <div className="absolute rounded-full top-0 left-1/2 -translate-x-1/2 size-[520px] bg-[#F26A06]/40 blur-[120px]" />
+      </div>
 
       <div className="pt-24 min-h-screen">
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 1g:px-8 py-8 pb-28 lg:pb-8">
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 lg:pb-8">
           <div className="grid lg:grid-cols-[400px_1fr] gap-8">
+            
             {/* LEFT PANEL */}
-            <div className={`space-y-6 ${id && "pointer-events-none"}`}>
-              <div className="p-6 rounded-2xl bg-white/8 border border-white/12 shadow-xl space-y-6">
+            <div className={`space-y-6 ${id ? "pointer-events-none opacity-80" : ""}`}>
+              <div className="p-6 rounded-2xl bg-white/5 border border-white/10 shadow-xl space-y-6">
                 <div>
-                  <h2 className="text-white text-2xl font-bold tracking-tight">
-                    Create Your Thumbnail
-                  </h2>
-                  <p className="text-white/60 text-sm mt-1 font-normal">
-                    Describe your vision and let AI bring it to life
-                  </p>
+                  <h2 className="text-white text-2xl font-bold tracking-tight">Create Your Thumbnail</h2>
+                  <p className="text-white/60 text-sm mt-1">Describe your vision and let AI bring it to life</p>
                 </div>
+
                 <div className="space-y-5">
-                  {/*TITLE INPUT*/}
                   <div>
-                    <label className="block text-white font-medium mb-1.5">
-                      Title or Topic
-                    </label>
+                    <label className="block text-white font-medium mb-1.5">Title or Topic</label>
                     <input
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       maxLength={100}
                       placeholder="e.g., how to control a bad habit"
-                      className="w-full px-4 py-3 rounded-lg border border-white/10 bg-white/6 text-zinc-100 placeholder:text-zinc-400
-                       focus:outline-none focus:ring-2 focus:ring-[rgb(214,76,18)]  resize-none"
+                      className="w-full px-4 py-3 rounded-lg border border-white/10 bg-white/5 text-zinc-100 focus:ring-2 focus:ring-orange-500 outline-none"
                     />
-                    <div className="flex justify-end">
-                      <span className="text-xs text-zinc-400">
-                        {title.length}/100
-                      </span>
+                    <div className="flex justify-end mt-1">
+                      <span className="text-xs text-zinc-400">{title.length}/100</span>
                     </div>
                   </div>
-                  {/*AspectRatioSelector*/}
-                  <AspectRatioSelector value={aspectRatio} onChange={setAspectRatio}/>
-                  {/* StyleSelector */}
-                  <StyleSelector value={style} onChange={setStyle} isOpen={styleDropdownOpen} setIsOpen={setStyleDropdownOpen}/>
-                  {/* ColorSchemeSelector */}
-                  <ColorSchemeSelector value={colorSchemeId} onChange={setColorSchemeId}/>
 
-                  {/* DETAILS */}
+                  <AspectRatioSelector value={aspectRatio} onChange={setAspectRatio} />
+                  <StyleSelector value={style} onChange={setStyle} isOpen={styleDropdownOpen} setIsOpen={setStyleDropdownOpen} />
+                  <ColorSchemeSelector value={colorSchemeId} onChange={setColorSchemeId} />
+
                   <div className="space-y-2">
                     <label className="block text-white font-medium mb-1.5">
-                      Additional Prompts
-                      <span className="text-zinc-400 text-xs">(optional)</span>
+                      Additional Prompts <span className="text-zinc-400 text-xs">(optional)</span>
                     </label>
                     <textarea
                       value={additionalDetails}
                       onChange={(e) => setAdditionalDetails(e.target.value)}
                       rows={3}
-                      placeholder="Add any specific elements.mood,or style preferences..."
-                      className="w-full px-4 py-3 rounded-lg border border-white/10 bg-white/6 text-zinc-100 placeholder:text-zinc-400
-                       focus:outline-none focus:ring-2 focus:ring-[rgb(214,76,18)]  resize-none"
+                      placeholder="Add specific elements, mood, or style preferences..."
+                      className="w-full px-4 py-3 rounded-lg border border-white/10 bg-white/5 text-zinc-100 focus:ring-2 focus:ring-orange-500 outline-none resize-none"
                     />
                   </div>
                 </div>
-                {/*Button*/}
+
                 {!id && (
-                  <button className="text-[15px] w-full py-3.5 rounded-xl font-medium text-white bg-[rgb(214,76,18)] hover:bg-[rgb(185,60,12)] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-orange-900/20">
+                  <button 
+                    onClick={handleGenerate}
+                    disabled={loading}
+                    className="w-full py-3.5 rounded-xl font-medium text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50 transition-all shadow-lg shadow-orange-900/20"
+                  >
                     {loading ? "Generating..." : "Generate"}
                   </button>
                 )}
               </div>
             </div>
+
             {/* RIGHT PANEL */}
             <div>
-              <div className="p-6 rounded-2xl bg-white/8 border border-white/10 shadow-xl">
-                <h2 className="text-lg font-semibold text-zinc-100">Preview</h2>
-                <PreviewPanel thumbnail={thumbnail} isLoading={loading} aspectRatio={aspectRatio}/>
+              <div className="p-6 rounded-2xl bg-white/5 border border-white/10 shadow-xl">
+                <h2 className="text-lg font-semibold text-zinc-100 mb-4">Preview</h2>
+                {/* Changes made here:
+                    Removed the fallback `|| dummyThumbnails[0]`.
+                    Now it passes `null` initially, so no image shows until generated.
+                */}
+                <PreviewPanel 
+                  thumbnail={thumbnail} 
+                  isLoading={loading} 
+                  aspectRatio={aspectRatio} 
+                />
               </div>
             </div>
+
           </div>
         </main>
       </div>
