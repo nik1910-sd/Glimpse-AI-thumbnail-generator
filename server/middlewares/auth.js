@@ -1,22 +1,11 @@
 const protect = async (req, res, next) => {
+    const { isLoggedIn, userId } = req.session;
 
-    if (!req.session) {
-        return res.status(401).json({ 
-            success: false, 
-            message: 'Session not found. Please enable cookies.' 
-        });
-    }
+    if (!isLoggedIn || !userId) {
+        return res.status(401).json({ message: 'You are not logged in' });
+    }
 
-    const { isLoggedIn, userId } = req.session;
-
-    if (!isLoggedIn || !userId) {
-        return res.status(401).json({ 
-            success: false, 
-            message: 'You are not logged in' 
-        });
-    }
-
-    next();
+    next();
 };
 
 export default protect;

@@ -6,7 +6,6 @@ const AuthRouter = express.Router();
 
 AuthRouter.post('/register', registerUser);
 AuthRouter.post('/login', loginUser);
-// Protect verify and logout routes to ensure user is authenticated
 AuthRouter.get('/verify', protect, verifyUser);
 AuthRouter.post('/logout', protect, logoutUser);
 
