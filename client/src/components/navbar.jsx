@@ -32,7 +32,7 @@ export default function Navbar() {
                 transition={{ type: "spring", stiffness: 250, damping: 70 }}
             >
                 <NavLink to='/'>
-                    <img src="../assets/logo.svg" alt="logo" className='h-8 w-auto' />
+                    <img src="../../assets/logo.svg" alt="logo" className='h-8 w-auto' />
                 </NavLink>
 
                 {/* Desktop Navigation */}

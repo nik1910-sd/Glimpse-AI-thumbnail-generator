@@ -18,7 +18,7 @@ export default function Footer() {
             transition={{ duration: 0.5 }}
         >
             <NavLink to='/'>
-                <img src="./assets/logo.svg" alt="logo" className='h-8.5 w-auto' />
+                <img src="../../assets/logo.svg" alt="logo" className='h-8.5 w-auto' />
 
                 </NavLink>
 
