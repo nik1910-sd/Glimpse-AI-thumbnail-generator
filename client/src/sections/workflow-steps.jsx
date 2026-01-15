@@ -1,25 +1,27 @@
 import { motion } from "framer-motion";
 import SectionTitle from "../components/section-title";
-
+import workflow1 from '../../assets/workflow1.png';
+import workflow2 from '../../assets/workflow2.png';
+import workflow3 from '../../assets/workflow3.png';
 
 const steps = [
     {
         id: 1,
         title: "Describe Your Vision",
         description: "Enter a simple prompt explaining your video's topic. Our AI analyzes your hook and generates high-conversion visual concepts instantly.",
-        image: "../../assets/workflow1.png", 
+        image: workflow1, 
     },
     {
         id: 2,
         title: "Customize & Style",
         description: "Fine-tune your output by selecting the perfect aspect ratio, artistic style, and color scheme. Tailor the aesthetics to match your brand's unique identity.",
-        image: "../../assets/workflow2.png", 
+        image: workflow2, 
     },
     {
         id: 3,
         title: "YouTube Live Preview",
         description: "Instantly visualize your thumbnail in a mock YouTube feed. Compare it against competitors to ensure your design wins the scroll every time.",
-        image: "../../assets/workflow3.png", 
+        image: workflow3, 
     },
 ];
 

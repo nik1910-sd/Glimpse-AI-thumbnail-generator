@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { motion } from "framer-motion";
 import { NavLink, useNavigate, Link } from "react-router-dom"; // Added Link
 import { useAuth } from '../context/AuthContext';
+import logo from '../../assets/logo.svg';
 
 export default function Navbar() {
     const { isLoggedIn, user, logout } = useAuth(); // Values from AuthContext
@@ -32,7 +33,7 @@ export default function Navbar() {
                 transition={{ type: "spring", stiffness: 250, damping: 70 }}
             >
                 <NavLink to='/'>
-                    <img src="../../assets/logo.svg" alt="logo" className='h-8 w-auto' />
+                    <img src={logo} alt="logo" className='h-8 w-auto' />
                 </NavLink>
 
                 {/* Desktop Navigation */}
