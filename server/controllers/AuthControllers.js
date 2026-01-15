@@ -4,7 +4,6 @@ import bcrypt from 'bcrypt';
 export const registerUser = async (req, res) => {
     try {
         const { name, email, password } = req.body;
-
         const user = await User.findOne({ email });
         
         if (user) {
@@ -25,13 +24,16 @@ export const registerUser = async (req, res) => {
         req.session.isLoggedIn = true;
         req.session.userId = newUser._id;
 
-        return res.json({
-            message: 'Account created successfully',
-            user: {
-                _id: newUser._id,
-                name: newUser.name,
-                email: newUser.email
-            }
+        req.session.save((err) => {
+            if (err) return res.status(500).json({ message: "Session save failed" });
+            return res.json({
+                message: 'Account created successfully',
+                user: {
+                    _id: newUser._id,
+                    name: newUser.name,
+                    email: newUser.email
+                }
+            });
         });
     } catch (error) {
         console.log(error);
@@ -39,11 +41,9 @@ export const registerUser = async (req, res) => {
     }
 };
 
-// Controllers For User Login
 export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-
         const user = await User.findOne({ email });
     
         if (!user) {
@@ -59,13 +59,16 @@ export const loginUser = async (req, res) => {
         req.session.isLoggedIn = true;
         req.session.userId = user._id; 
 
-        return res.json({
-            message: 'Login Successfully',
-            user: {
-                _id: user._id,
-                name: user.name,
-                email: user.email
-            }
+        req.session.save((err) => {
+            if (err) return res.status(500).json({ message: "Session save failed" });
+            return res.json({
+                message: 'Login Successfully',
+                user: {
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email
+                }
+            });
         });
     } catch (error) {
         console.log(error);
@@ -73,23 +76,21 @@ export const loginUser = async (req, res) => {
     }
 };
 
-// Controllers For User Logout
 export const logoutUser = async (req, res) => {
     req.session.destroy((error) => {
         if (error) {
             console.log(error);
             return res.status(500).json({ message: error.message });
         }
+
         res.clearCookie('connect.sid'); 
         return res.json({ message: 'Logout successful' });
     });
 };
 
-// Controllers For User Verify
 export const verifyUser = async (req, res) => {
     try {
-        const { userId } = req.session; //
-
+        const { userId } = req.session; 
         const user = await User.findById(userId).select('-password');
 
         if (!user) {
