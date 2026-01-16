@@ -28,7 +28,7 @@ const MyGenerations = () => {
   const fetchThumbnails = async () => {
     try {
       setLoading(true);
-      // Ensure your backend endpoint matches exactly
+    
       const { data } = await api.get('/api/user/thumbnails');
       setThumbnails(data.thumbnails || []);
     } catch (error) {
@@ -70,7 +70,6 @@ const MyGenerations = () => {
     try {
       if (!window.confirm('Are you sure you want to delete this thumbnail?')) return;
       
-      // FIX: Ensure this endpoint matches your backend route precisely
       const { data } = await api.delete(`/api/thumbnail/delete/${id}`);
       toast.success(data.message || "Deleted successfully");
       
@@ -89,7 +88,7 @@ const MyGenerations = () => {
 
   return (
     <div className="relative min-h-screen bg-zinc-950 text-white selection:bg-pink-500/30">
-      {/* Background Decorative Blurs - Improved Z-indexing */}
+
       <div className="fixed inset-0 overflow-hidden z-0 pointer-events-none">
         <div className="absolute rounded-full top-80 left-[20%] -translate-x-1/2 size-96 bg-pink-600/20 blur-[120px]" />
         <div className="absolute rounded-full top-40 right-0 size-96 bg-blue-600/20 blur-[120px]" />
