@@ -34,7 +34,7 @@ export default function App() {
             <Route path='/my-generations' element={<MyGenerations/>}/>
             <Route path='/login' element={<Login/>}/>
             <Route path='/preview' element={<YtPreview/>}/>
-              
+            <Route path="*" element={<Navigate to="/" replace />} />  
            </Routes>
            <Footer/>
            <ToastContainer 
