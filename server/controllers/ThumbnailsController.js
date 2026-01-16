@@ -1,12 +1,8 @@
 import { v2 as cloudinary } from 'cloudinary';
-import path from 'path';
-import fs from 'fs';
 import Thumbnail from '../models/Thumbnails.js';
 import ai from '../configs/ai.js';
 
-
 const model = 'gemini-3-pro-image-preview';
-
 
 // Configuration for AI Styles
 const stylePrompts = {
@@ -33,8 +29,7 @@ export const generateThumbnail = async (req, res) => {
         const { userId } = req.session;
         const { title, prompt: user_prompt, style, aspect_ratio, color_scheme, text_overlay } = req.body;
 
-        // Initialize the thumbnail record in MongoDB
-        // Note: Using new Thumbnail() + .save() or Thumbnail.create() is standard
+        // 1. Initialize the thumbnail record in MongoDB
         const thumbnail = new Thumbnail({
             userId,
             title,
@@ -47,7 +42,8 @@ export const generateThumbnail = async (req, res) => {
             isGenerating: true
         });
 
-        
+        // Save immediately so the UI sees the "Generating..." state in history
+        await thumbnail.save();
 
         const generationConfig = {
             maxOutputTokens: 32768,
@@ -58,10 +54,10 @@ export const generateThumbnail = async (req, res) => {
                 aspectRatio: aspect_ratio || '16:9',
                 imageSize: '1K'
             }
-        }; // Fixed: Added missing closing brace
+        };
 
-        // Build the dynamic prompt
-        let prompt = `Create a ${stylePrompts[style]} for: "${title}"`;
+        // 2. Build the dynamic prompt
+        let prompt = `Create a ${stylePrompts[style] || 'professional thumbnail'} for: "${title}"`;
 
         if (color_scheme) {
             prompt += ` Use a ${colorSchemeDescriptions[color_scheme]} color scheme.`;
@@ -71,9 +67,9 @@ export const generateThumbnail = async (req, res) => {
             prompt += ` Additional details: ${user_prompt}. `;
         }
 
-        prompt += ` The thumbnail should be ${aspect_ratio}, visually stunning, and designed to maximize click-through rate. Make it bold, professional, and impossible to ignore.`;
+        prompt += ` The thumbnail should be ${aspect_ratio}, visually stunning, and designed to maximize click-through rate. Make it bold and professional.`;
 
-        // Generate the image using the ai model
+        // 3. Generate the image using the Gemini API
         const response = await ai.models.generateContent({
             model,
             contents: [prompt],
@@ -81,43 +77,49 @@ export const generateThumbnail = async (req, res) => {
         });
 
         if (!response?.candidates?.[0]?.content?.parts) {
-            throw new Error('Unexpected response from AI');
+            throw new Error('Unexpected response from AI model');
         }
 
         const parts = response.candidates[0].content.parts;
-        let finalBuffer = null;
+        let base64Image = null;
 
         for (const part of parts) {
             if (part.inlineData) {
-                finalBuffer = Buffer.from(part.inlineData.data, 'base64');
+                // Extract the base64 string directly from the inline data
+                base64Image = part.inlineData.data;
             }
         }
 
-        if (!finalBuffer) throw new Error("No image data received");
+        if (!base64Image) throw new Error("No image data received from AI");
 
-        const filename = `final-output-${Date.now()}.png`;
-        const filePath = path.join('images', filename); // Fixed: used lowercase 'path'
+        // 4. Upload to Cloudinary using Data URI (Memory-only, no local 'fs' used)
+        // This bypasses the read-only file system restrictions on Vercel
+        const uploadResult = await cloudinary.uploader.upload(
+            `data:image/png;base64,${base64Image}`, 
+            { 
+                resource_type: 'image',
+                folder: 'glimpse_thumbnails'
+            }
+        );
 
-        // Ensure directory exists and save file
-        fs.mkdirSync('images', { recursive: true });
-        fs.writeFileSync(filePath, finalBuffer);
-
-        // Upload to Cloudinary
-        const uploadResult = await cloudinary.uploader.upload(filePath, { resource_type: 'image' });
-
-        // Update database record
-        thumbnail.image_url = uploadResult.url;
+        // 5. Update database record with the permanent Secure URL
+        thumbnail.image_url = uploadResult.secure_url;
         thumbnail.isGenerating = false;
         await thumbnail.save();
 
-        res.json({ message: 'Thumbnail Generated', thumbnail });
-
-        // Cleanup: remove temporary file
-        fs.unlinkSync(filePath);
+        // 6. Respond to Frontend
+        res.json({ 
+            success: true,
+            message: 'Thumbnail Generated Successfully', 
+            thumbnail 
+        });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: error.message });
+        console.error("Generation Error:", error);
+        res.status(500).json({ 
+            success: false,
+            message: error.message 
+        });
     }
 };
 
@@ -126,8 +128,12 @@ export const deleteThumbnail = async (req, res) => {
         const { id } = req.params;
         const { userId } = req.session;
 
-        // Ensure user can only delete their own thumbnails
-        await Thumbnail.findOneAndDelete({ _id: id, userId });
+        // Ensure user can only delete their own thumbnails for security
+        const deletedThumb = await Thumbnail.findOneAndDelete({ _id: id, userId });
+
+        if (!deletedThumb) {
+            return res.status(404).json({ message: 'Thumbnail not found or unauthorized' });
+        }
 
         res.json({ message: 'Thumbnail deleted successfully' });
     } catch (error) {

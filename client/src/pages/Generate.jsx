@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-// Removed dummyThumbnails from imports as it is no longer used
+
 import { thumbnailStyles, colorSchemes, aspectRatios } from "../../assets/Assets";
 import AspectRatioSelector from "../components/AspectRatioSelector";
 import StyleSelector from "../components/StyleSelector";
@@ -163,10 +163,7 @@ const Generate = () => {
             <div>
               <div className="p-6 rounded-2xl bg-white/5 border border-white/10 shadow-xl">
                 <h2 className="text-lg font-semibold text-zinc-100 mb-4">Preview</h2>
-                {/* Changes made here:
-                    Removed the fallback `|| dummyThumbnails[0]`.
-                    Now it passes `null` initially, so no image shows until generated.
-                */}
+                
                 <PreviewPanel 
                   thumbnail={thumbnail} 
                   isLoading={loading} 
