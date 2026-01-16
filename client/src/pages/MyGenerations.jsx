@@ -39,21 +39,32 @@ const MyGenerations = () => {
     }
   };
 
-  const handleDownload = (image_url) => {
-    // FIX: Added guard clause to prevent crash
-    if (!image_url) return toast.error("Image not ready for download");
+  const handleDownload = async (image_url) => {
+  if (!image_url) return toast.error("Image not ready for download");
 
+  try {
+    const response = await fetch(image_url);
+    const blob = await response.blob();
+    
+    const url = window.URL.createObjectURL(blob);
+    
     const link = document.createElement('a');
-    // Assuming Cloudinary for attachment forcing
-    link.href = image_url.includes('upload') 
-      ? image_url.replace('/upload', '/upload/fl_attachment') 
-      : image_url;
-      
-    link.setAttribute('download', 'thumbnail.png');
+    link.href = url;
+    
+    link.setAttribute('download', `glimpse-thumbnail-${Date.now()}.png`);
+    
     document.body.appendChild(link);
     link.click();
-    link.remove();
-  };
+   
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    toast.success("Download started!");
+  } catch (error) {
+    console.error("Download error:", error);
+    toast.error("Failed to download image. Try right-clicking and 'Save As'.");
+  }
+};
 
   const handleDelete = async (id) => {
     try {
