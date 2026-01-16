@@ -33,8 +33,7 @@ export default function App() {
             <Route path='/generate/:id' element={<Generate/>}/>
             <Route path='/my-generations' element={<MyGenerations/>}/>
             <Route path='/login' element={<Login/>}/>
-            <Route path='/preview' element={<YtPreview/>}/>
-            <Route path="*" element={<Navigate to="/" replace />} />  
+            <Route path='/preview' element={<YtPreview/>}/>  
            </Routes>
            <Footer/>
            <ToastContainer 
