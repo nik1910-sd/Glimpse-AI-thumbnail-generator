@@ -28,7 +28,6 @@ const MyGenerations = () => {
   const fetchThumbnails = async () => {
     try {
       setLoading(true);
-    
       const { data } = await api.get('/api/user/thumbnails');
       setThumbnails(data.thumbnails || []);
     } catch (error) {
@@ -40,39 +39,31 @@ const MyGenerations = () => {
   };
 
   const handleDownload = async (image_url) => {
-  if (!image_url) return toast.error("Image not ready for download");
+    if (!image_url) return toast.error("Image not ready for download");
 
-  try {
-    const response = await fetch(image_url);
-    const blob = await response.blob();
-    
-    const url = window.URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.href = url;
-    
-    link.setAttribute('download', `glimpse-thumbnail-${Date.now()}.png`);
-    
-    document.body.appendChild(link);
-    link.click();
-   
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-    
-    toast.success("Download started!");
-  } catch (error) {
-    console.error("Download error:", error);
-    toast.error("Failed to download image. Try right-clicking and 'Save As'.");
-  }
-};
+    try {
+      const response = await fetch(image_url);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `glimpse-thumbnail-${Date.now()}.png`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("Download started!");
+    } catch (error) {
+      console.error("Download error:", error);
+      toast.error("Failed to download image. Try right-clicking and 'Save As'.");
+    }
+  };
 
   const handleDelete = async (id) => {
     try {
       if (!window.confirm('Are you sure you want to delete this thumbnail?')) return;
-      
       const { data } = await api.delete(`/api/thumbnail/delete/${id}`);
       toast.success(data.message || "Deleted successfully");
-      
       setThumbnails(prev => prev.filter((t) => t._id !== id));
     } catch (error) {
       console.error(error);
@@ -88,7 +79,7 @@ const MyGenerations = () => {
 
   return (
     <div className="relative min-h-screen bg-zinc-950 text-white selection:bg-pink-500/30">
-
+      {/* Background Decorative Elements */}
       <div className="fixed inset-0 overflow-hidden z-0 pointer-events-none">
         <div className="absolute rounded-full top-80 left-[20%] -translate-x-1/2 size-96 bg-pink-600/20 blur-[120px]" />
         <div className="absolute rounded-full top-40 right-0 size-96 bg-blue-600/20 blur-[120px]" />
@@ -108,10 +99,10 @@ const MyGenerations = () => {
           </div>
         ) : thumbnails.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 border border-dashed border-zinc-800 rounded-3xl bg-zinc-900/30">
-            <h3 className="text-xl font-medium text-zinc-300">No thumbnails found</h3>
+            <h3 className="text-xl font-medium text-zinc-300 mb-4">No thumbnails found</h3>
             <button 
               onClick={() => navigate('/generate')}
-              className="btn glass"
+              className="px-6 py-2 bg-pink-600 hover:bg-pink-700 rounded-full transition-colors font-medium"
             >
               Create Your First Glimpse
             </button>
@@ -127,7 +118,11 @@ const MyGenerations = () => {
                 {/* THUMBNAIL PREVIEW */}
                 <div className={`relative overflow-hidden ${aspectRatioClassMap[thumb.aspect_ratio] || 'aspect-video'} bg-zinc-800`}>
                   {thumb.image_url ? (
-                    <img src={thumb.image_url} alt={thumb.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <img 
+                      src={thumb.image_url} 
+                      alt={thumb.title} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                    />
                   ) : (
                     <div className="flex items-center justify-center h-full text-zinc-500 text-xs">
                       {thumb.isGenerating ? "Processing AI..." : "No Image Data"}
@@ -139,23 +134,35 @@ const MyGenerations = () => {
                 <div className="p-4 bg-gradient-to-b from-zinc-900/50 to-black/80">
                   <h3 className="text-sm font-medium text-zinc-100 truncate">{thumb.title}</h3>
                   <div className="flex gap-2 mt-3">
-                    <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-white/5">{thumb.style}</span>
+                    <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-white/5">
+                      {thumb.style}
+                    </span>
                   </div>
                 </div>
 
-                {/* HOVER ACTIONS */}
+                {/* ACTIONS PANEL */}
                 <div 
                   onClick={(e) => e.stopPropagation()} 
-                  className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  className="absolute top-3 right-3 flex flex-col gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 z-20"
                 >
-                  <button onClick={() => handleDelete(thumb._id)} className="p-2 bg-black/60 backdrop-blur-md rounded-lg hover:bg-red-500 text-white transition-colors">
-                    <TrashIcon size={18} />
+                  <button 
+                    onClick={() => handleDelete(thumb._id)} 
+                    className="p-3 lg:p-2 bg-black/70 backdrop-blur-md rounded-xl lg:rounded-lg hover:bg-red-500 text-white transition-colors shadow-xl"
+                  >
+                    <TrashIcon size={20} />
                   </button>
-                  <button onClick={() => handleDownload(thumb.image_url)} className="p-2 bg-black/60 backdrop-blur-md rounded-lg hover:bg-pink-500 text-white transition-colors">
-                    <DownloadIcon size={18} />
+                  <button 
+                    onClick={() => handleDownload(thumb.image_url)} 
+                    className="p-3 lg:p-2 bg-black/70 backdrop-blur-md rounded-xl lg:rounded-lg hover:bg-pink-500 text-white transition-colors shadow-xl"
+                  >
+                    <DownloadIcon size={20} />
                   </button>
-                  <Link to={`/preview?thumbnail_url=${thumb.image_url}&title=${thumb.title}`} target="_blank" className="p-2 bg-black/60 backdrop-blur-md rounded-lg hover:bg-blue-500 text-white transition-colors">
-                    <ArrowUpRightIcon size={18} />
+                  <Link 
+                    to={`/preview?thumbnail_url=${encodeURIComponent(thumb.image_url)}&title=${encodeURIComponent(thumb.title)}`} 
+                    target="_blank" 
+                    className="p-3 lg:p-2 bg-black/70 backdrop-blur-md rounded-xl lg:rounded-lg hover:bg-blue-500 text-white transition-colors shadow-xl"
+                  >
+                    <ArrowUpRightIcon size={20} />
                   </Link>
                 </div>
               </div>
