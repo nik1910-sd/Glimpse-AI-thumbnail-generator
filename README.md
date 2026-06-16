@@ -1,11 +1,25 @@
-# 📸 Glimpse: AI-Powered Thumbnail Generator
+<div align="center">
+  <h1>📸 Glimpse — AI-Powered Thumbnail Generator</h1>
+ 
+  <p>A professional full-stack platform for content creators to generate high-conversion YouTube thumbnails using Generative AI — with a live YouTube homepage preview to test your click-through potential before you publish.</p>
+  <a href="https://glimpse-umber.vercel.app/" target="_blank">
+    <img src="https://img.shields.io/badge/🔗 Live Demo-glimpse--umber.vercel.app-0A66C2?style=for-the-badge" alt="Live Demo" />
+  </a>
+  <br /><br />
+ 
+  <img src="https://img.shields.io/badge/React.js-61DAFB?style=flat&logo=react&logoColor=black" />
+  <img src="https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white" />
+  <img src="https://img.shields.io/badge/Express.js-000000?style=flat&logo=express&logoColor=white" />
+  <img src="https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white" />
+  <img src="https://img.shields.io/badge/Tailwind CSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white" />
+  <img src="https://img.shields.io/badge/Google Gemini-4285F4?style=flat&logo=google&logoColor=white" />
+  <img src="https://img.shields.io/badge/Cloudinary-3448C5?style=flat&logo=cloudinary&logoColor=white" />
+  <img src="https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white" />
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black" />
+</div>
 
-**Glimpse** is a professional full-stack  platform designed for content creators to generate high-conversion thumbnails using Generative AI. It features a unique **Live Preview System** that injects generated thumbnails into a simulated YouTube homepage mockup, allowing creators to test their "click-through rate" potential in a real-world environment.
 
----
 
-## 🔗 Live Demo
-**Check it out here:** [https://glimpse-umber.vercel.app/](https://glimpse-umber.vercel.app/)
 
 ---
 
